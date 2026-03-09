@@ -1,0 +1,481 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Feedback - Student Stress Tracker</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.8.1/font/bootstrap-icons.css">
+    <style>
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+            font-family: 'Poppins', sans-serif;
+        }
+        .feedback-card {
+            border-radius: 20px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+            border: none;
+            overflow: hidden;
+            animation: slideUp 0.5s ease;
+        }
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        .feedback-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+        .feedback-header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            font-weight: 700;
+        }
+        .feedback-body {
+            padding: 40px;
+            background: white;
+        }
+        .rating-stars {
+            font-size: 2rem;
+            color: #ffc107;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        .rating-stars i {
+            margin: 0 5px;
+            transition: all 0.2s ease;
+        }
+        .rating-stars i:hover {
+            transform: scale(1.2);
+            color: #ffb300;
+        }
+        .feedback-type-btn {
+            border: 2px solid #e0e0e0;
+            border-radius: 50px;
+            padding: 10px 20px;
+            margin: 5px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            background: white;
+            color: #6c757d;
+            font-weight: 500;
+        }
+        .feedback-type-btn:hover {
+            border-color: #667eea;
+            color: #667eea;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.2);
+        }
+        .feedback-type-btn.active {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-color: transparent;
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+        .char-counter {
+            font-size: 0.85rem;
+            color: #6c757d;
+            text-align: right;
+            margin-top: 5px;
+        }
+        .emoji-picker {
+            font-size: 2rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        .emoji-picker span {
+            margin: 0 8px;
+            opacity: 0.5;
+            transition: all 0.2s ease;
+            display: inline-block;
+        }
+        .emoji-picker span:hover {
+            opacity: 1;
+            transform: scale(1.3);
+        }
+        .emoji-picker span.selected {
+            opacity: 1;
+            transform: scale(1.2);
+            filter: drop-shadow(0 5px 10px rgba(102, 126, 234, 0.3));
+        }
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border: none;
+            padding: 12px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3);
+        }
+        .btn-outline-primary {
+            border: 2px solid #667eea;
+            color: #667eea;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+        .btn-outline-primary:hover {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-color: transparent;
+            transform: translateY(-2px);
+        }
+        .user-welcome {
+            background: white;
+            border-radius: 50px;
+            padding: 10px 25px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+            font-weight: 500;
+        }
+        .form-control, .form-select {
+            border-radius: 12px;
+            border: 2px solid #e0e0e0;
+            padding: 12px 15px;
+            transition: all 0.3s ease;
+        }
+        .form-control:focus, .form-select:focus {
+            border-color: #667eea;
+            box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.1);
+            transform: translateY(-2px);
+        }
+        .alert {
+            border-radius: 12px;
+            border: none;
+            animation: slideIn 0.3s ease;
+        }
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateX(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-md-8">
+                <!-- User Info Bar -->
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <div class="user-welcome">
+                        <i class="bi bi-emoji-smile text-primary me-2"></i>
+                        <span class="text-primary">Welcome, </span>
+                        <strong>{{ session.get('full_name', session.get('username')) }}</strong>
+                    </div>
+                    <div>
+                        <a href="/" class="btn btn-outline-light btn-sm me-2">
+                            <i class="bi bi-house-door"></i> Home
+                        </a>
+                        <a href="/feedback/history" class="btn btn-outline-light btn-sm me-2">
+                            <i class="bi bi-clock-history"></i> History
+                        </a>
+                        <a href="/logout" class="btn btn-outline-light btn-sm">
+                            <i class="bi bi-box-arrow-right"></i> Logout
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Feedback Card -->
+                <div class="feedback-card">
+                    <div class="feedback-header">
+                        <h1><i class="bi bi-chat-heart-fill"></i> Share Your Feedback</h1>
+                        <p class="lead mb-0">Help us make your stress tracking experience better</p>
+                    </div>
+                    
+                    <div class="feedback-body">
+                        <!-- Flash Messages -->
+                        {% with messages = get_flashed_messages(with_categories=true) %}
+                            {% if messages %}
+                                {% for category, message in messages %}
+                                    <div class="alert alert-{{ category if category != 'message' else 'info' }} alert-dismissible fade show" role="alert">
+                                        <i class="bi bi-{{ 'check-circle-fill' if category == 'success' else 'info-circle-fill' }} me-2"></i>
+                                        {{ message }}
+                                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                                    </div>
+                                {% endfor %}
+                            {% endif %}
+                        {% endwith %}
+
+                        <form action="/feedback" method="POST" id="feedbackForm">
+                            <!-- Quick Emoji Feedback -->
+                            <div class="text-center mb-4">
+                                <label class="form-label fw-bold fs-5">How are you feeling today?</label>
+                                <div class="emoji-picker mt-2">
+                                    <span onclick="setMood('😊')" title="Great!">😊</span>
+                                    <span onclick="setMood('😐')" title="Okay">😐</span>
+                                    <span onclick="setMood('😕')" title="Not great">😕</span>
+                                    <span onclick="setMood('😞')" title="Stressed">😞</span>
+                                    <span onclick="setMood('🤔')" title="Thinking">🤔</span>
+                                    <span onclick="setMood('🎓')" title="Studying">🎓</span>
+                                </div>
+                                <input type="hidden" name="mood" id="moodInput" value="">
+                            </div>
+
+                            <!-- Feedback Type -->
+                            <div class="mb-4">
+                                <label class="form-label fw-bold fs-5">Feedback Type <span class="text-danger">*</span></label>
+                                <div class="d-flex flex-wrap justify-content-center">
+                                    <div class="feedback-type-btn" onclick="selectType('suggestion')">
+                                        <i class="bi bi-lightbulb"></i> Suggestion
+                                    </div>
+                                    <div class="feedback-type-btn" onclick="selectType('bug')">
+                                        <i class="bi bi-bug"></i> Bug Report
+                                    </div>
+                                    <div class="feedback-type-btn" onclick="selectType('feature')">
+                                        <i class="bi bi-stars"></i> Feature Request
+                                    </div>
+                                    <div class="feedback-type-btn" onclick="selectType('compliment')">
+                                        <i class="bi bi-hand-thumbs-up"></i> Compliment
+                                    </div>
+                                    <div class="feedback-type-btn" onclick="selectType('other')">
+                                        <i class="bi bi-chat-dots"></i> Other
+                                    </div>
+                                </div>
+                                <input type="hidden" name="feedback_type" id="feedbackTypeInput" required>
+                                <div class="text-danger small mt-2" id="typeError" style="display: none;">
+                                    Please select a feedback type
+                                </div>
+                            </div>
+
+                            <!-- Rating -->
+                            <div class="mb-4 text-center">
+                                <label class="form-label fw-bold fs-5">Rate Your Experience</label>
+                                <div class="rating-stars" id="ratingStars">
+                                    <i class="bi bi-star" onclick="setRating(1)"></i>
+                                    <i class="bi bi-star" onclick="setRating(2)"></i>
+                                    <i class="bi bi-star" onclick="setRating(3)"></i>
+                                    <i class="bi bi-star" onclick="setRating(4)"></i>
+                                    <i class="bi bi-star" onclick="setRating(5)"></i>
+                                </div>
+                                <input type="hidden" name="rating" id="ratingInput" value="">
+                                <div class="text-muted small mt-1">Click on the stars to rate</div>
+                            </div>
+
+                            <!-- Feedback Message -->
+                            <div class="mb-4">
+                                <label for="message" class="form-label fw-bold fs-5">Your Feedback <span class="text-danger">*</span></label>
+                                <textarea class="form-control" id="message" name="message" rows="5" 
+                                          placeholder="Please share your thoughts, suggestions, or report any issues..." 
+                                          maxlength="500" required></textarea>
+                                <div class="char-counter" id="charCounter">0/500 characters</div>
+                            </div>
+
+                            <!-- Additional Info (Optional) -->
+                            <div class="mb-4">
+                                <label class="form-label fw-bold">Additional Information (Optional)</label>
+                                <div class="row">
+                                    <div class="col-md-6 mb-2">
+                                        <input type="text" class="form-control" name="page" placeholder="Page (e.g., Assessment, History, Charts)">
+                                    </div>
+                                    <div class="col-md-6 mb-2">
+                                        <input type="text" class="form-control" name="browser" id="browserInput" placeholder="Browser" readonly>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Submit Buttons -->
+                            <div class="d-flex gap-3">
+                                <button type="submit" class="btn btn-primary flex-grow-1" id="submitBtn">
+                                    <i class="bi bi-send-fill me-2"></i> Submit Feedback
+                                </button>
+                                <a href="/" class="btn btn-outline-secondary">
+                                    <i class="bi bi-x-circle"></i> Cancel
+                                </a>
+                            </div>
+                        </form>
+
+                        <div class="text-center mt-4">
+                            <small class="text-muted">
+                                <i class="bi bi-shield-check me-1"></i> 
+                                Your feedback is anonymous and helps us improve the app for everyone
+                            </small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Auto-detect browser
+        document.getElementById('browserInput').value = navigator.userAgent;
+
+        // Character counter
+        const messageInput = document.getElementById('message');
+        const charCounter = document.getElementById('charCounter');
+        
+        messageInput.addEventListener('input', function() {
+            const length = this.value.length;
+            charCounter.textContent = `${length}/500 characters`;
+            
+            if (length > 450) {
+                charCounter.style.color = '#dc3545';
+            } else if (length > 400) {
+                charCounter.style.color = '#ffc107';
+            } else {
+                charCounter.style.color = '#6c757d';
+            }
+        });
+
+        // Feedback type selection
+        function selectType(type) {
+            // Remove active class from all buttons
+            document.querySelectorAll('.feedback-type-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            
+            // Add active class to clicked button
+            event.currentTarget.classList.add('active');
+            
+            // Set hidden input value
+            document.getElementById('feedbackTypeInput').value = type;
+            
+            // Hide error message if shown
+            document.getElementById('typeError').style.display = 'none';
+        }
+
+        // Rating stars
+        function setRating(rating) {
+            const stars = document.querySelectorAll('.rating-stars i');
+            
+            stars.forEach((star, index) => {
+                if (index < rating) {
+                    star.classList.remove('bi-star');
+                    star.classList.add('bi-star-fill');
+                } else {
+                    star.classList.remove('bi-star-fill');
+                    star.classList.add('bi-star');
+                }
+            });
+            
+            document.getElementById('ratingInput').value = rating;
+        }
+
+        // Mood selection
+        function setMood(emoji) {
+            // Remove selected class from all emojis
+            document.querySelectorAll('.emoji-picker span').forEach(span => {
+                span.classList.remove('selected');
+            });
+            
+            // Add selected class to clicked emoji
+            event.currentTarget.classList.add('selected');
+            
+            // Set hidden input value
+            document.getElementById('moodInput').value = emoji;
+        }
+
+        // Form validation
+        document.getElementById('feedbackForm').addEventListener('submit', function(e) {
+            const feedbackType = document.getElementById('feedbackTypeInput').value;
+            
+            if (!feedbackType) {
+                e.preventDefault();
+                document.getElementById('typeError').style.display = 'block';
+                document.getElementById('typeError').innerHTML = '⚠️ Please select a feedback type!';
+                
+                // Highlight the feedback type section
+                document.querySelector('.feedback-type-btn').scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }
+        });
+
+        // Add animation to rating stars on hover
+        document.querySelectorAll('.rating-stars i').forEach(star => {
+            star.addEventListener('mouseover', function() {
+                const rating = parseInt(this.getAttribute('onclick').match(/\d/)[0]);
+                const stars = document.querySelectorAll('.rating-stars i');
+                
+                stars.forEach((s, index) => {
+                    if (index < rating) {
+                        s.style.transform = 'scale(1.2)';
+                    }
+                });
+            });
+            
+            star.addEventListener('mouseout', function() {
+                document.querySelectorAll('.rating-stars i').forEach(s => {
+                    s.style.transform = 'scale(1)';
+                });
+            });
+        });
+
+        // Auto-resize textarea
+        messageInput.addEventListener('input', function() {
+            this.style.height = 'auto';
+            this.style.height = (this.scrollHeight) + 'px';
+        });
+    </script>
+</body>
+</html>
+<style>
+    .feedback-decoration {
+        position: relative;
+    }
+    
+    .feedback-decoration::before {
+        content: '💬';
+        position: absolute;
+        top: 50px;
+        left: 50px;
+        font-size: 80px;
+        opacity: 0.1;
+        transform: rotate(-10deg);
+        animation: pulse 3s ease-in-out infinite;
+    }
+    
+    .feedback-decoration::after {
+        content: '📝';
+        position: absolute;
+        bottom: 50px;
+        right: 50px;
+        font-size: 80px;
+        opacity: 0.1;
+        transform: rotate(10deg);
+        animation: pulse 3s ease-in-out infinite reverse;
+    }
+    
+    .thought-bubble {
+        position: absolute;
+        background: rgba(255, 255, 255, 0.1);
+        border-radius: 50%;
+        width: 100px;
+        height: 100px;
+        animation: float 8s ease-in-out infinite;
+    }
+    
+    .bubble-1 {
+        top: 20%;
+        left: 10%;
+    }
+    
+    .bubble-2 {
+        bottom: 30%;
+        right: 15%;
+        width: 150px;
+        height: 150px;
+        animation-delay: 2s;
+    }
+    
+    @keyframes float {
+        0%, 100% { transform: translate(0, 0) scale(1); }
+        25% { transform: translate(10px, -10px) scale(1.1); }
+        50% { transform: translate(-5px, 15px) scale(0.9); }
+        75% { transform: translate(-15px, -5px) scale(1.05); }
+    }
+</style>

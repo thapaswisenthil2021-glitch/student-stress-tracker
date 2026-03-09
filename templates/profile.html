@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Profile - Student Stress Tracker</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <style>
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        .card {
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            border: none;
+        }
+        .card-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-radius: 15px 15px 0 0 !important;
+        }
+        .profile-avatar {
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 20px;
+            font-size: 3rem;
+            color: white;
+            border: 4px solid white;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+        .stat-card {
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            text-align: center;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            transition: all 0.3s ease;
+            height: 100%;
+        }
+        .stat-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+        }
+        .stat-number {
+            font-size: 2rem;
+            font-weight: bold;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 5px;
+        }
+        .stat-label {
+            color: #6c757d;
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            font-weight: 600;
+        }
+        .info-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 12px 0;
+            border-bottom: 1px solid #eee;
+        }
+        .info-label {
+            color: #6c757d;
+            font-weight: 600;
+        }
+        .info-value {
+            color: #2b2d42;
+            font-weight: 500;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-md-10">
+                <div class="card">
+                    <div class="card-header text-center py-4">
+                        <h1 class="display-5 mb-3">👤 My Profile</h1>
+                        <p class="lead mb-0">Manage your account information</p>
+                    </div>
+                    
+                    <div class="card-body p-4">
+                        {% with messages = get_flashed_messages(with_categories=true) %}
+                            {% if messages %}
+                                {% for category, message in messages %}
+                                    <div class="alert alert-{{ category if category != 'message' else 'info' }} alert-dismissible fade show" role="alert">
+                                        {{ message }}
+                                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                                    </div>
+                                {% endfor %}
+                            {% endif %}
+                        {% endwith %}
+                        
+                        <div class="row">
+                            <div class="col-md-4 mb-4">
+                                <div class="text-center">
+                                    <div class="profile-avatar">
+                                        {{ user[1][0]|upper if user and user[1] else 'U' }}
+                                    </div>
+                                    <h4>{{ user[4] if user and user[4] else user[1] }}</h4>
+                                    <p class="text-muted">@{{ user[1] if user else '' }}</p>
+                                    <div class="mt-3">
+                                        <a href="/" class="btn btn-primary btn-sm me-2">New Assessment</a>
+                                        <a href="/history" class="btn btn-outline-primary btn-sm">History</a>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="col-md-8">
+                                <div class="card">
+                                    <div class="card-header bg-transparent">
+                                        <h5 class="mb-0">Account Information</h5>
+                                    </div>
+                                    <div class="card-body">
+                                        <div class="info-row">
+                                            <span class="info-label">Username</span>
+                                            <span class="info-value">{{ user[1] if user else '' }}</span>
+                                        </div>
+                                        <div class="info-row">
+                                            <span class="info-label">Email</span>
+                                            <span class="info-value">{{ user[2] if user else '' }}</span>
+                                        </div>
+                                        <div class="info-row">
+                                            <span class="info-label">Full Name</span>
+                                            <span class="info-value">{{ user[4] if user and user[4] else 'Not provided' }}</span>
+                                        </div>
+                                        <div class="info-row">
+                                            <span class="info-label">Age</span>
+                                            <span class="info-value">{{ user[5] if user and user[5] else 'Not provided' }}</span>
+                                        </div>
+                                        <div class="info-row">
+                                            <span class="info-label">Gender</span>
+                                            <span class="info-value">{{ user[6] if user and user[6] else 'Not provided' }}</span>
+                                        </div>
+                                        <div class="info-row">
+                                            <span class="info-label">Member Since</span>
+                                            <span class="info-value">{{ user[7] if user else '' }}</span>
+                                        </div>
+                                        <div class="info-row">
+                                            <span class="info-label">Last Login</span>
+                                            <span class="info-value">{{ user[8] if user and user[8] else 'First login' }}</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="row mt-4">
+                                    <div class="col-md-4 mb-3">
+                                        <div class="stat-card">
+                                            <div class="stat-number">{{ stats[0] if stats and stats[0] else 0 }}</div>
+                                            <div class="stat-label">Total Assessments</div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4 mb-3">
+                                        <div class="stat-card">
+                                            <div class="stat-number">{{ "%.1f"|format(stats[1]) if stats and stats[1] else '0.0' }}</div>
+                                            <div class="stat-label">Avg Stress Score</div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4 mb-3">
+                                        <div class="stat-card">
+                                            <div class="stat-number">{{ "%.0f"|format(stats[2]) if stats and stats[2] else '0' }}</div>
+                                            <div class="stat-label">Highest Stress</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="text-center mt-4">
+                            <a href="/logout" class="btn btn-outline-danger" onclick="return confirm('Are you sure you want to logout?')">
+                                Logout
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
+<style>
+    .profile-badge {
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .profile-badge::before {
+        content: '👤';
+        position: absolute;
+        top: -10px;
+        right: -10px;
+        font-size: 80px;
+        opacity: 0.1;
+        transform: rotate(15deg);
+    }
+    
+    .achievement-icon {
+        font-size: 40px;
+        animation: shine 2s ease-in-out infinite;
+    }
+    
+    @keyframes shine {
+        0%, 100% { filter: brightness(1); }
+        50% { filter: brightness(1.3); }
+    }
+    
+    .stat-card {
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .stat-card::after {
+        content: '🏆';
+        position: absolute;
+        bottom: -10px;
+        right: -10px;
+        font-size: 50px;
+        opacity: 0.1;
+        transform: rotate(-10deg);
+    }
+</style>

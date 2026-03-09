@@ -1,0 +1,336 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Student Stress Tracker</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Add these lines for static files -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <script src="{{ url_for('static', filename='js/chart.js') }}" defer></script>
+    <style>
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        .card {
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            border: none;
+        }
+        .card-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-radius: 15px 15px 0 0 !important;
+        }
+        .form-range::-webkit-slider-thumb {
+            background: #667eea;
+        }
+        .form-range::-moz-range-thumb {
+            background: #667eea;
+        }
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border: none;
+        }
+        .nav-tabs .nav-link.active {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white !important;
+            border: none;
+        }
+        .user-welcome {
+            background: white;
+            border-radius: 50px;
+            padding: 8px 20px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+        .user-welcome .welcome-text {
+            color: #667eea;
+            font-weight: 500;
+        }
+        .user-welcome .username {
+            color: #2b2d42;
+            font-weight: 700;
+        }
+    </style>
+</head>
+<body>
+    <body>
+    <!-- Animated Background with Student Icons -->
+    <div class="animated-bg">
+        <span></span>
+        <span></span>
+        <span></span>
+        <span></span>
+        <span></span>
+        <span></span>
+        <span></span>
+        <span></span>
+        <span></span>
+        <span></span>
+    </div>
+
+    <div class="container">
+        <!-- Rest of your content -->
+    </div>
+</body>
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-md-10 col-lg-8">
+                <!-- User info bar - SINGLE INSTANCE ONLY -->
+                {% if session.get('username') %}
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <div class="user-welcome">
+                        <span class="welcome-text">👋 Welcome, </span>
+                        <span class="username">{{ session.get('full_name', session.get('username')) }}</span>
+                        <span class="badge bg-primary ms-2">Student</span>
+                    </div>
+                    <div>
+                        <a href="/profile" class="btn btn-outline-primary btn-sm me-2">
+                            <span class="me-1">👤</span> Profile
+                        </a>
+                        <a href="/logout" class="btn btn-outline-danger btn-sm">
+                            <span class="me-1">🚪</span> Logout
+                        </a>
+                    </div>
+                </div>
+                {% else %}
+                <div class="d-flex justify-content-end mb-4">
+                    <a href="/login" class="btn btn-outline-primary btn-sm me-2">
+                        <span class="me-1">🔐</span> Login
+                    </a>
+                    <a href="/register" class="btn btn-primary btn-sm">
+                        <span class="me-1">📝</span> Register
+                    </a>
+                </div>
+                {% endif %}
+
+                <!-- Main Card -->
+                <div class="card">
+                    <div class="card-header text-center py-4">
+                        <h1 class="display-5 mb-3">🎓 Student Stress Tracker</h1>
+                        <p class="lead mb-0">Assess your stress levels and get personalized recommendations</p>
+                    </div>
+                    
+                    <div class="card-body p-4">
+                        {% with messages = get_flashed_messages(with_categories=true) %}
+                            {% if messages %}
+                                {% for category, message in messages %}
+                                    <div class="alert alert-{{ category if category != 'message' else 'warning' }} alert-dismissible fade show" role="alert">
+                                        {{ message }}
+                                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                                    </div>
+                                {% endfor %}
+                            {% endif %}
+                        {% endwith %}
+                        
+                        <!-- Navigation Tabs -->
+                        <ul class="nav nav-tabs nav-fill mb-4" id="myTab" role="tablist">
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link active" id="assessment-tab" data-bs-toggle="tab" data-bs-target="#assessment" type="button" role="tab">
+                                    📝 Stress Assessment
+                                </button>
+                            </li>
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link" id="history-tab" data-bs-toggle="tab" data-bs-target="#history" type="button" role="tab" onclick="location.href='/history'">
+                                    📋 History
+                                </button>
+                            </li>
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link" id="charts-tab" data-bs-toggle="tab" data-bs-target="#charts" type="button" role="tab" onclick="location.href='/chart'">
+                                    📊 Charts
+                                </button>
+                            </li>
+                        </ul>
+                        
+                        <!-- Tab Content -->
+                        <div class="tab-content">
+                            <!-- Assessment Form -->
+                            <div class="tab-pane fade show active" id="assessment" role="tabpanel">
+                                <form action="/analyze" method="POST">
+                                    <div class="row g-3">
+                                        <!-- Personal Information -->
+                                        <div class="col-md-6">
+                                            <div class="mb-3">
+                                                <label for="name" class="form-label fw-bold">Full Name</label>
+                                                <input type="text" class="form-control" id="name" name="name" required placeholder="Enter your full name">
+                                            </div>
+                                        </div>
+                                        <div class="col-md-3">
+                                            <div class="mb-3">
+                                                <label for="age" class="form-label fw-bold">Age</label>
+                                                <input type="number" class="form-control" id="age" name="age" min="12" max="30" required placeholder="Age">
+                                            </div>
+                                        </div>
+                                        <div class="col-md-3">
+                                            <div class="mb-3">
+                                                <label for="gender" class="form-label fw-bold">Gender</label>
+                                                <select class="form-select" id="gender" name="gender" required>
+                                                    <option value="" disabled selected>Select</option>
+                                                    <option value="Male">Male</option>
+                                                    <option value="Female">Female</option>
+                                                    <option value="Other">Other</option>
+                                                </select>
+                                            </div>
+                                        </div>
+                                        
+                                        <!-- Academic Pressure -->
+                                        <div class="col-12">
+                                            <div class="mb-4">
+                                                <label class="form-label fw-bold">Academic Pressure (1=Low, 5=High)</label>
+                                                <input type="range" class="form-range" min="1" max="5" step="1"
+                                                       id="academic_pressure" name="academic_pressure" value="3">
+                                                <div class="d-flex justify-content-between px-2">
+                                                    <small class="text-muted">1 - Low</small>
+                                                    <small class="text-muted">2</small>
+                                                    <small class="text-muted">3 - Medium</small>
+                                                    <small class="text-muted">4</small>
+                                                    <small class="text-muted">5 - High</small>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        
+                                        <!-- Sleep Hours -->
+                                        <div class="col-12">
+                                            <div class="mb-4">
+                                                <label class="form-label fw-bold">Average Sleep Hours per Night</label>
+                                                <input type="range" class="form-range" min="4" max="12" step="0.5"
+                                                       id="sleep_hours" name="sleep_hours" value="7">
+                                                <div class="d-flex justify-content-between px-2">
+                                                    <small class="text-muted">4 hrs</small>
+                                                    <small class="text-muted">8 hrs</small>
+                                                    <small class="text-muted">12 hrs</small>
+                                                </div>
+                                                <div class="text-center mt-2">
+                                                    <span class="badge bg-primary px-3 py-2" id="sleepValue">7 hours</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        
+                                        <!-- Physical Activity -->
+                                        <div class="col-12">
+                                            <div class="mb-4">
+                                                <label class="form-label fw-bold">Physical Activity per Week (1=None, 5=Very Active)</label>
+                                                <input type="range" class="form-range" min="1" max="5" step="1"
+                                                       id="physical_activity" name="physical_activity" value="3">
+                                                <div class="d-flex justify-content-between px-2">
+                                                    <small class="text-muted">1 - None</small>
+                                                    <small class="text-muted">2</small>
+                                                    <small class="text-muted">3 - Moderate</small>
+                                                    <small class="text-muted">4</small>
+                                                    <small class="text-muted">5 - Very Active</small>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        
+                                        <!-- Social Support -->
+                                        <div class="col-12">
+                                            <div class="mb-4">
+                                                <label class="form-label fw-bold">Social Support (1=Poor, 5=Excellent)</label>
+                                                <input type="range" class="form-range" min="1" max="5" step="1"
+                                                       id="social_support" name="social_support" value="3">
+                                                <div class="d-flex justify-content-between px-2">
+                                                    <small class="text-muted">1 - Poor</small>
+                                                    <small class="text-muted">2</small>
+                                                    <small class="text-muted">3 - Average</small>
+                                                    <small class="text-muted">4</small>
+                                                    <small class="text-muted">5 - Excellent</small>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        
+                                        <!-- Workload Hours -->
+                                        <div class="col-12">
+                                            <div class="mb-4">
+                                                <label class="form-label fw-bold">Weekly Study/Work Hours</label>
+                                                <input type="range" class="form-range" min="10" max="80" step="5"
+                                                       id="workload_hours" name="workload_hours" value="40">
+                                                <div class="d-flex justify-content-between px-2">
+                                                    <small class="text-muted">10 hrs</small>
+                                                    <small class="text-muted">45 hrs</small>
+                                                    <small class="text-muted">80 hrs</small>
+                                                </div>
+                                                <div class="text-center mt-2">
+                                                    <span class="badge bg-primary px-3 py-2" id="workloadValue">40 hours</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        
+                                        <!-- Submit Button -->
+                                        <div class="col-12 mt-4">
+                                            <div class="d-grid">
+                                                <button type="submit" class="btn btn-primary btn-lg">
+                                                    <span class="me-2">🔍</span> Analyze My Stress Level
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="card-footer text-center py-3 bg-light">
+                        <small class="text-muted">
+                            <i class="bi bi-shield-lock"></i> Your data is stored securely and anonymously for analysis
+                        </small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- In the user menu section of index.html, update the buttons -->
+<div>
+    {% if session.get('username') %}
+        <a href="/feedback" class="btn btn-outline-primary btn-sm me-2">
+            <i class="bi bi-chat-heart"></i> Feedback
+        </a>
+        <a href="/profile" class="btn btn-outline-primary btn-sm me-2">
+            <span class="me-1">👤</span> Profile
+        </a>
+        <a href="/logout" class="btn btn-outline-danger btn-sm">
+            <span class="me-1">🚪</span> Logout
+        </a>
+    {% else %}
+        <a href="/login" class="btn btn-outline-primary btn-sm me-2">
+            <span class="me-1">🔐</span> Login
+        </a>
+        <a href="/register" class="btn btn-primary btn-sm">
+            <span class="me-1">📝</span> Register
+        </a>
+    {% endif %}
+</div>    
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Update sleep hours display
+        const sleepSlider = document.getElementById('sleep_hours');
+        const sleepValue = document.getElementById('sleepValue');
+        sleepSlider.addEventListener('input', function() {
+            sleepValue.textContent = this.value + ' hours';
+        });
+        
+        // Update workload hours display
+        const workloadSlider = document.getElementById('workload_hours');
+        const workloadValue = document.getElementById('workloadValue');
+        workloadSlider.addEventListener('input', function() {
+            workloadValue.textContent = this.value + ' hours';
+        });
+        
+        // Initialize values on page load
+        sleepValue.textContent = sleepSlider.value + ' hours';
+        workloadValue.textContent = workloadSlider.value + ' hours';
+        
+        // Add animation to sliders
+        const sliders = document.querySelectorAll('.form-range');
+        sliders.forEach(slider => {
+            slider.addEventListener('input', function() {
+                this.style.transform = 'scale(1.02)';
+                setTimeout(() => {
+                    this.style.transform = 'scale(1)';
+                }, 100);
+            });
+        });
+    </script>
+</body>
+</html>

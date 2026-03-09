@@ -1,0 +1,327 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Register - Student Stress Tracker</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <style>
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        .card {
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            border: none;
+        }
+        .card-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-radius: 15px 15px 0 0 !important;
+        }
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border: none;
+            padding: 12px;
+            font-weight: 600;
+        }
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+        .form-control:focus {
+            border-color: #667eea;
+            box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
+        }
+        .password-strength {
+            height: 5px;
+            border-radius: 3px;
+            margin-top: 5px;
+            transition: all 0.3s ease;
+        }
+        .strength-weak {
+            width: 33%;
+            background: #dc3545;
+        }
+        .strength-medium {
+            width: 66%;
+            background: #ffc107;
+        }
+        .strength-strong {
+            width: 100%;
+            background: #28a745;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-md-8 col-lg-6">
+                <div class="card">
+                    <div class="card-header text-center py-4">
+                        <h1 class="display-6 mb-2">📝 Create Account</h1>
+                        <p class="mb-0">Join Student Stress Tracker</p>
+                    </div>
+                    
+                    <div class="card-body p-4">
+                        {% with messages = get_flashed_messages(with_categories=true) %}
+                            {% if messages %}
+                                {% for category, message in messages %}
+                                    <div class="alert alert-{{ category if category != 'message' else 'info' }} alert-dismissible fade show" role="alert">
+                                        {{ message }}
+                                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                                    </div>
+                                {% endfor %}
+                            {% endif %}
+                        {% endwith %}
+                        
+                        <form action="/register" method="POST" id="registerForm">
+                            <div class="row g-3">
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label for="username" class="form-label">Username *</label>
+                                        <input type="text" class="form-control" id="username" name="username" required 
+                                               pattern="[A-Za-z0-9_]{3,20}" title="Username must be 3-20 characters (letters, numbers, underscore)">
+                                        <div class="form-text">3-20 characters (letters, numbers, underscore)</div>
+                                    </div>
+                                </div>
+                                
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label for="email" class="form-label">Email *</label>
+                                        <input type="email" class="form-control" id="email" name="email" required>
+                                    </div>
+                                </div>
+                                
+                                <div class="col-12">
+                                    <div class="mb-3">
+                                        <label for="full_name" class="form-label">Full Name</label>
+                                        <input type="text" class="form-control" id="full_name" name="full_name">
+                                    </div>
+                                </div>
+                                
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label for="age" class="form-label">Age</label>
+                                        <input type="number" class="form-control" id="age" name="age" min="12" max="30">
+                                    </div>
+                                </div>
+                                
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label for="gender" class="form-label">Gender</label>
+                                        <select class="form-select" id="gender" name="gender">
+                                            <option value="">Prefer not to say</option>
+                                            <option value="Male">Male</option>
+                                            <option value="Female">Female</option>
+                                            <option value="Other">Other</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label for="password" class="form-label">Password *</label>
+                                        <input type="password" class="form-control" id="password" name="password" required 
+                                               minlength="6" onkeyup="checkPasswordStrength()">
+                                        <div class="password-strength" id="passwordStrength"></div>
+                                        <div class="form-text">Minimum 6 characters</div>
+                                    </div>
+                                </div>
+                                
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label for="confirm_password" class="form-label">Confirm Password *</label>
+                                        <input type="password" class="form-control" id="confirm_password" name="confirm_password" required 
+                                               onkeyup="validatePassword()">
+                                        <div class="form-text" id="passwordMatch"></div>
+                                    </div>
+                                </div>
+                                
+                                <div class="col-12">
+                                    <div class="mb-3 form-check">
+                                        <input type="checkbox" class="form-check-input" id="terms" required>
+                                        <label class="form-check-label" for="terms">
+                                            I agree to the <a href="#" data-bs-toggle="modal" data-bs-target="#termsModal">Terms and Conditions</a>
+                                        </label>
+                                    </div>
+                                </div>
+                                
+                                <div class="col-12">
+                                    <div class="d-grid">
+                                        <button type="submit" class="btn btn-primary btn-lg" id="submitBtn" disabled>
+                                            Create Account
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </form>
+                        
+                        <div class="text-center mt-4">
+                            <p class="mb-0">Already have an account? <a href="/login" class="text-decoration-none">Login here</a></p>
+                        </div>
+                    </div>
+                    
+                    <div class="card-footer text-center py-3">
+                        <small class="text-muted">Your data is stored securely and anonymously</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Terms and Conditions Modal -->
+    <div class="modal fade" id="termsModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Terms and Conditions</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <h6>1. Data Usage</h6>
+                    <p>Your stress assessment data will be stored locally and used to provide personalized recommendations and analytics.</p>
+                    
+                    <h6>2. Privacy</h6>
+                    <p>We respect your privacy. Your personal information is not shared with third parties.</p>
+                    
+                    <h6>3. Accuracy</h6>
+                    <p>This tool is for educational purposes only and not a substitute for professional medical advice.</p>
+                    
+                    <h6>4. Account Security</h6>
+                    <p>You are responsible for maintaining the confidentiality of your account credentials.</p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-primary" data-bs-dismiss="modal">I Understand</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        function checkPasswordStrength() {
+            const password = document.getElementById('password').value;
+            const strengthBar = document.getElementById('passwordStrength');
+            
+            // Check password strength
+            let strength = 0;
+            
+            if (password.length >= 6) strength += 1;
+            if (password.length >= 8) strength += 1;
+            if (password.match(/[a-z]+/)) strength += 1;
+            if (password.match(/[A-Z]+/)) strength += 1;
+            if (password.match(/[0-9]+/)) strength += 1;
+            if (password.match(/[$@#&!]+/)) strength += 1;
+            
+            // Update strength bar
+            strengthBar.className = 'password-strength';
+            if (strength <= 2) {
+                strengthBar.classList.add('strength-weak');
+            } else if (strength <= 4) {
+                strengthBar.classList.add('strength-medium');
+            } else {
+                strengthBar.classList.add('strength-strong');
+            }
+            
+            validatePassword();
+        }
+        
+        function validatePassword() {
+            const password = document.getElementById('password').value;
+            const confirm = document.getElementById('confirm_password').value;
+            const matchMsg = document.getElementById('passwordMatch');
+            const submitBtn = document.getElementById('submitBtn');
+            const terms = document.getElementById('terms');
+            
+            if (confirm) {
+                if (password === confirm) {
+                    matchMsg.innerHTML = '<span class="text-success">✓ Passwords match</span>';
+                    submitBtn.disabled = !terms.checked;
+                } else {
+                    matchMsg.innerHTML = '<span class="text-danger">✗ Passwords do not match</span>';
+                    submitBtn.disabled = true;
+                }
+            } else {
+                matchMsg.innerHTML = '';
+                submitBtn.disabled = true;
+            }
+        }
+        
+        document.getElementById('terms').addEventListener('change', function() {
+            validatePassword();
+        });
+        
+        // Form validation
+        document.getElementById('registerForm').addEventListener('submit', function(e) {
+            const password = document.getElementById('password').value;
+            const confirm = document.getElementById('confirm_password').value;
+            
+            if (password !== confirm) {
+                e.preventDefault();
+                alert('Passwords do not match!');
+            }
+        });
+    </script>
+</body>
+</html>
+<style>
+    /* Add to existing styles */
+    .register-decoration {
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .register-decoration::before {
+        content: '📚';
+        position: absolute;
+        top: -20px;
+        left: -20px;
+        font-size: 100px;
+        opacity: 0.1;
+        transform: rotate(-15deg);
+    }
+    
+    .register-decoration::after {
+        content: '✏️';
+        position: absolute;
+        bottom: -20px;
+        right: -20px;
+        font-size: 100px;
+        opacity: 0.1;
+        transform: rotate(15deg);
+    }
+    
+    .floating-student {
+        position: absolute;
+        font-size: 24px;
+        opacity: 0.2;
+        animation: float 6s ease-in-out infinite;
+    }
+    
+    .student-1 {
+        top: 10%;
+        left: 5%;
+        animation-delay: 0s;
+    }
+    
+    .student-2 {
+        bottom: 15%;
+        right: 8%;
+        animation-delay: 2s;
+    }
+    
+    .student-3 {
+        top: 20%;
+        right: 15%;
+        animation-delay: 4s;
+    }
+    
+    @keyframes float {
+        0%, 100% { transform: translateY(0) rotate(0deg); }
+        50% { transform: translateY(-20px) rotate(5deg); }
+    }
+</style>
